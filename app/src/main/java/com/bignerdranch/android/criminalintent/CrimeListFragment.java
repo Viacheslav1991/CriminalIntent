@@ -1,6 +1,7 @@
 package com.bignerdranch.android.criminalintent;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -27,6 +28,7 @@ class CrimeListFragment extends Fragment {
 
     private RecyclerView mCrimeRecyclerView;
     private CrimeAdapter mAdapter;
+    private int position;
 
     @Nullable
     @Override
@@ -67,10 +69,9 @@ class CrimeListFragment extends Fragment {
 
         @Override
         public void onClick(View v) {
-            Toast.makeText(getActivity(),
-                    mCrime.getTitle() + " clicked!", Toast.LENGTH_SHORT)
-                    .show();
-
+            Intent intent = CrimePagerActivity.newIntent(getActivity(), mCrime.getId());
+            position = getAdapterPosition();
+            startActivity(intent);
         }
     }
 
@@ -117,8 +118,17 @@ class CrimeListFragment extends Fragment {
     private void updateUI() {
         CrimeLab crimeLab = CrimeLab.get(getActivity());
         List<Crime> crimes = crimeLab.getCrimes();
+        if (mAdapter == null) {
+            mAdapter = new CrimeAdapter(crimes);
+            mCrimeRecyclerView.setAdapter(mAdapter);
+        } else {
+            mAdapter.notifyItemChanged(position);
+        }
+    }
 
-        mAdapter = new CrimeAdapter(crimes);
-        mCrimeRecyclerView.setAdapter(mAdapter);
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateUI();
     }
 }
