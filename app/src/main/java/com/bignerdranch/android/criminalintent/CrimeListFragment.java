@@ -26,6 +26,7 @@ import java.util.List;
 @SuppressLint("ValidFragment")
 class CrimeListFragment extends Fragment {
 
+
     private RecyclerView mCrimeRecyclerView;
     private CrimeAdapter mAdapter;
     private int position;
@@ -61,7 +62,7 @@ class CrimeListFragment extends Fragment {
         public void bind(Crime crime) {
             mCrime = crime;
             mTitleTextView.setText(mCrime.getTitle());
-            @SuppressLint("SimpleDateFormat") SimpleDateFormat dateFormat = new SimpleDateFormat("EEEE, MMM dd, yyyy");
+            @SuppressLint("SimpleDateFormat") SimpleDateFormat dateFormat = new SimpleDateFormat("EEEE, MMM dd, yyyy HH:mm:ss");
             mDateTextView.setText(dateFormat.format(mCrime.getDate()));
 //            mDateTextView.setText(mCrime.getDate().toString());
             mSolvedImageView.setVisibility(crime.isSolved() ? View.VISIBLE : View.GONE);
@@ -131,4 +132,6 @@ class CrimeListFragment extends Fragment {
         super.onResume();
         updateUI();
     }
+
+
 }
