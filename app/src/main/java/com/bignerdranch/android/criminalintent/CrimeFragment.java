@@ -74,9 +74,11 @@ public class CrimeFragment extends Fragment {
         mDateButton = v.findViewById(R.id.crime_date);
         updateDate();
         mDateButton.setOnClickListener(v1 -> {
-            DatePickerFragment dialog = DatePickerFragment.newInstance(mCrime.getDate());
-            dialog.setTargetFragment(CrimeFragment.this, REQUEST_DATE);
-            dialog.show(Objects.requireNonNull(getFragmentManager()), DIALOG_DATE);
+//            DatePickerFragment dialog = DatePickerFragment.newInstance(mCrime.getDate());
+//            dialog.setTargetFragment(CrimeFragment.this, REQUEST_DATE);
+//            dialog.show(Objects.requireNonNull(getFragmentManager()), DIALOG_DATE);
+            Intent intent = DatePickerActivity.newIntent(getActivity(), mCrime.getDate());
+            startActivityForResult(intent,REQUEST_DATE);
         });
 
         mTimeButton = v.findViewById(R.id.crime_time_button);
