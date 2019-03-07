@@ -37,6 +37,7 @@ public class CrimeFragment extends Fragment {
     private EditText mTitleField;
     private Button mDateButton;
     private Button mTimeButton;
+    private Button mDeleteCrimeButton;
     private CheckBox mSolvedCheckBox;
 
 
@@ -89,6 +90,12 @@ public class CrimeFragment extends Fragment {
             timeDialog.show(Objects.requireNonNull(getFragmentManager()),DIALOG_TIME);
         });
 
+        mDeleteCrimeButton = v.findViewById(R.id.delete_crime_button);
+        mDeleteCrimeButton.setOnClickListener(v1 -> {
+            CrimeLab.get(getActivity()).removeCrime(mCrime.getId());
+            getActivity().finish();
+        });
+
         mSolvedCheckBox = v.findViewById(R.id.crime_solved);
         mSolvedCheckBox.setChecked(mCrime.isSolved());
         mSolvedCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> mCrime.setSolved(isChecked));
@@ -132,5 +139,11 @@ public class CrimeFragment extends Fragment {
 
     private void updateDate() {
         updateTime("EEEE, MMM dd, yyyy", mDateButton);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        CrimeLab.get(getActivity()).updateCrime(mCrime);
     }
 }
