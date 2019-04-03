@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -13,20 +14,24 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.ShareCompat;
 import android.support.v4.content.FileProvider;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.bignerdranch.android.criminalintent.model.Crime;
 import com.bignerdranch.android.criminalintent.model.CrimeLab;
@@ -39,9 +44,11 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class CrimeFragment extends Fragment {
+    private static final String TAG = "CrimeFragment";
     private static final String ARG_CRIME_ID = "crime_id";
     private static final String DIALOG_DATE = "DialogDate";
     private static final String DIALOG_TIME = "DialogTime";
+    private static final String DIALOG_PHOTO = "DialogPhoto";
     private static final int REQUEST_DATE = 0;
     private static final int REQUEST_TIME = 1;
     private static final int REQUEST_CONTACT = 2;
@@ -112,6 +119,24 @@ public class CrimeFragment extends Fragment {
             }
         });
         mPhotoView = (ImageView) v.findViewById(R.id.crime_photo);
+        ViewTreeObserver observer = mPhotoView.getViewTreeObserver();
+        observer.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                Toast.makeText(getActivity(),"Observer",Toast.LENGTH_SHORT).show();
+                updatePhotoView(mPhotoView.getWidth(), mPhotoView.getHeight());
+            }
+        });
+        mPhotoView.setClickable(true);
+        mPhotoView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FragmentManager manager = getFragmentManager();
+                PhotoPickerFragment photoPickerFragment = PhotoPickerFragment.newInstance(mPhotoFile.getAbsolutePath());
+                photoPickerFragment.show(manager, DIALOG_PHOTO);
+            }
+        });
+
 
         mTitleField = v.findViewById(R.id.crime_title);
         mTitleField.setText(mCrime.getTitle());
@@ -263,10 +288,18 @@ public class CrimeFragment extends Fragment {
             } finally {
                 c.close();
             }
+        } else if (requestCode == REQUEST_PHOTO) {
+            Uri uri = FileProvider.getUriForFile(getActivity(),
+                    "com.bignerdranch.android.criminalintent.fileprovider",
+                    mPhotoFile);
+            getActivity().revokeUriPermission(uri,
+                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            updatePhotoView(mPhotoView.getWidth(), mPhotoView.getHeight());
         }
 
 
-    }
+
+        }
 
 
     private String getCrimeReport() {
@@ -298,6 +331,25 @@ public class CrimeFragment extends Fragment {
 
     private void updateDate() {
         updateTime("EEEE, MMM dd, yyyy", mDateButton);
+    }
+    private void updatePhotoView() {
+        if (mPhotoFile == null || !mPhotoFile.exists()) {
+            mPhotoView.setImageDrawable(null);
+        } else {
+            Bitmap bitmap = PictureUtils.getScaledBitmap(
+                    mPhotoFile.getPath(), getActivity());
+            mPhotoView.setImageBitmap(bitmap);
+        }
+    }
+    private void updatePhotoView(int width, int height) {
+        if (mPhotoFile == null || !mPhotoFile.exists()) {
+            mPhotoView.setImageDrawable(null);
+        } else {
+            Log.d(TAG, "Width = " + width + " Height = " + height);
+            Bitmap bitmap = PictureUtils.getScaledBitmap(
+                    mPhotoFile.getPath(), width, height);
+            mPhotoView.setImageBitmap(bitmap);
+        }
     }
 
     @Override
